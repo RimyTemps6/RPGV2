@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Slime RPG</title>
+<meta name="description" content="Mesa de RPG online com dados 3D, fichas, mapa com fichas redondas e painel do mestre.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M10 50C3 38 11 17 32 15c20-2 29 20 22 35-4 8-40 10-44 0z' fill='%238FD0F8' stroke='%2312314F' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <section id="home">
+    <header class="topbar">
+      <div class="brand" id="brand-home"></div>
+      <span class="chip" id="net-chip">Conectando</span>
+      <div class="user-box" id="user-box" hidden><span id="u-photo"></span><strong id="u-name"></strong><button type="button" class="btn small ghost" data-act="logout">Sair da conta</button></div>
+    </header>
+    <div class="home-grid">
+      <div class="home-stage">
+        <div class="stage hero-stage" id="hero-stage" role="button" tabindex="0" aria-label="Rolar um d20"></div>
+        <p class="hero-cap" id="hero-cap" aria-live="polite">Toque no dado para rolar.</p>
+      </div>
+      <div class="home-main">
+        <h1>Mesa de RPG com dados 3D para jogar com seus amigos</h1>
+        <p class="lead">Entre com sua conta Google, adicione seus amigos e convide cada um para a sua mesa. Só amigos podem entrar.</p>
+        <p class="muted" id="boot-msg">Conectando...</p>
+        <div class="card login" id="login" hidden>
+          <h2>Entre para jogar</h2>
+          <p class="muted">Use sua conta Google. Você cria mesas como mestre e entra nas mesas dos amigos que convidarem você.</p>
+          <button type="button" class="btn" id="btn-google">Entrar com Google</button>
+          <p class="err" id="login-err" role="alert"></p>
+        </div>
+        <div id="lobby" hidden>
+        <div class="seg" role="tablist" aria-label="Menu inicial">
+          <button type="button" class="seg-b" role="tab" aria-selected="true" data-seg="criar">Criar mesa</button>
+          <button type="button" class="seg-b" role="tab" aria-selected="false" data-seg="mesas">Minhas mesas<span class="badge" id="b-mesas" hidden></span></button>
+          <button type="button" class="seg-b" role="tab" aria-selected="false" data-seg="amigos" id="seg-amigos">Amigos<span class="badge" id="b-amigos" hidden></span></button>
+        </div>
+
+        <form id="form-master" class="card form" autocomplete="off">
+          <div class="row">
+            <div class="field"><label for="m-title">Nome da mesa</label><input id="m-title" maxlength="60" placeholder="Ex.: A Caverna do Lodo" required></div>
+            <div class="field"><label for="m-name">Seu nome</label><input id="m-name" maxlength="30" placeholder="Como os jogadores vão te ver" required></div>
+          </div>
+          <div class="field">
+            <label for="m-scn">Cenário inicial</label>
+            <select id="m-scn">
+              <option value="">Começar com a mesa vazia</option>
+              <option value="sample">Usar o cenário de exemplo (A Caverna do Lodo)</option>
+              <option value="file">Importar um arquivo do meu aparelho</option>
+            </select>
+          </div>
+          <div class="field" id="m-file-wrap" hidden>
+            <label for="m-file">Arquivo de cenário (.json, .txt ou .md)</label>
+            <input id="m-file" type="file" accept=".json,.txt,.md,application/json,text/plain,text/markdown">
+          </div>
+          <button class="btn" type="submit" id="btn-create">Criar mesa</button>
+        </form>
+
+        <section class="card" id="panel-mesas" hidden></section>
+        <section class="card" id="panel-amigos" hidden></section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="table" hidden>
+    <header class="topbar">
+      <div class="brand" id="brand-table"></div>
+      <div class="bar-mid">
+        <strong id="t-title"></strong>
+        <button type="button" class="chip chip-btn" id="t-code" aria-label="Copiar o código da mesa"></button>
+      </div>
+      <span class="chip" id="t-role"></span>
+      <span class="chip" id="t-net"></span>
+      <button type="button" class="btn ghost small" id="btn-invite" data-act="room-invite" hidden>Convidar amigos</button>
+      <button type="button" class="btn ghost small bad" id="btn-del-room" data-act="room-delete" hidden>Apagar mesa</button>
+      <button type="button" class="btn ghost small" data-act="leave">Sair da mesa</button>
+    </header>
+    <div class="banner" id="banner" hidden></div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Seções da mesa"></nav>
+
+    <div id="p-mesa" class="mesa-grid">
+      <div class="stack">
+        <div class="card" id="m-scene"></div>
+        <div class="card" id="dice-card">
+          <div class="card-h">
+            <h2>Dados</h2>
+            <div class="dice-colors" id="dice-colors" role="group" aria-label="Cor dos seus dados"></div>
+          </div>
+          <div class="stage" id="stage"></div>
+          <div class="roll-result" id="roll-result" aria-live="polite"><span class="muted">Escolha os dados e role. Todos na mesa veem o resultado.</span></div>
+          <div class="die-row" id="die-row"></div>
+          <div class="roll-form">
+            <div class="field"><label for="f-formula">Fórmula</label><input id="f-formula" value="1d20" autocomplete="off" spellcheck="false" aria-describedby="f-help"></div>
+            <div class="field"><label for="f-label">O que você está rolando?</label><input id="f-label" maxlength="60" placeholder="Ex.: ataque com a espada" autocomplete="off"></div>
+            <button type="button" class="btn" id="btn-roll">Rolar</button>
+          </div>
+          <p class="muted" id="f-help" style="margin-top:8px">Exemplos: 1d20+3, 2d6, 4d8+2, d100. Até 12 dados por rolagem.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card" id="m-party"></div>
+        <div class="card" id="m-msg" hidden></div>
+        <div class="card" id="m-foes" hidden></div>
+        <div class="card" id="m-log"></div>
+      </div>
+    </div>
+    <div id="p-fichas" hidden></div>
+    <div id="p-cenarios" hidden></div>
+    <div id="p-criaturas" hidden></div>
+    <div id="p-chamada" hidden>
+      <div class="stack">
+        <div class="card" id="call-main">
+          <div class="card-h"><h2>Chamada de voz e vídeo</h2><span class="chip" id="call-count"></span></div>
+          <div id="call-ctl"></div>
+          <div id="call-grid" class="call-grid"></div>
+          <p class="muted" id="call-note" aria-live="polite"></p>
+          <button type="button" class="btn small ghost" id="whisper-all" data-act="whisper-all" hidden>Falar com todos de novo</button>
+        </div>
+        <div class="card" id="call-gm" hidden>
+          <div class="card-h"><h2>Trilhas sonoras</h2><button type="button" class="btn small" data-act="aud-import">Importar áudio</button></div>
+          <p class="muted">Importe mp3 ou mp4 do seu aparelho. Os arquivos ficam guardados neste navegador. Quem está na chamada ouve a trilha; você precisa estar na chamada para tocar para os jogadores.</p>
+          <div id="aud-list"></div>
+          <div class="aud-opts"><label class="vol">Volume<input id="aud-vol" type="range" min="0" max="100" value="80"></label><label class="check"><input id="aud-loop" type="checkbox"> Repetir</label></div>
+        </div>
+        <div class="card" id="call-people" hidden>
+          <div class="card-h"><h2>Jogadores</h2></div>
+          <div id="ppl-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<input type="file" id="img-pick" accept="image/*" hidden>
+<input type="file" id="aud-pick" accept="audio/*,video/mp4,.mp3,.mp4,.m4a,.wav,.ogg,.aac,.webm,.opus,.flac" multiple hidden>
+<div id="call-audio" hidden></div>
+<div id="dim" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="overlay" id="overlay" hidden></div>
+<div id="boss-hud" aria-live="polite"></div>
+<div id="msg-overlay" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="firebase-config.js"></script>
+<script src="core.js"></script>
+<script src="dice.js"></script>
+<script src="app.js"></script>
+<script src="map.js"></script>
+<script src="theme.js"></script>
+<script src="extras.js"></script>
+<script src="call.js"></script>
+<script src="social.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>
